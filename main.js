@@ -1,51 +1,84 @@
 var net = require('net');
-var Net = net;
-var NetPorts = ["1001", "1002", "1003", "1004"];
-//var NetPorts = ["1002"]
-myNet = []
-
 var serialport = require("serialport");
-var SerialPort = serialport;
-var ComPorts = ["COM26", "COM27", "COM28", "COM29"];
-//var ComPorts = ["COM26"]
-myPort = []
-
+const commandLineArgs = require('command-line-args')
 var crypto = require("crypto");
-let originalString = crypto.randomBytes(10000).toString('hex');
-originalString += "\r\n"
-receivedString = []
 
+const optionDefinitions = [
+  { name: 'sp', type: String, multiple: true },
+  { name: 'np', type: Number, multiple: true },
+  { name: 'baud', type: Number },
+  { name: 'bytes', type: Number }
+]
+
+const arguments = commandLineArgs(optionDefinitions)
+var ComPorts = arguments.sp;
+var NetPorts = arguments.np;
+var Baud = arguments.baud;
+var Bytes = arguments.bytes;
+var BaudRates = ["150", "300", "600", "1200", "2400", "4800", "9600", "19200", "28800", "38400", "57600", "115200", "230400", "460800"]
+
+if (Baud == undefined) Baud = "230400";
+if (Bytes == undefined) Bytes = "1048576";
+
+if (BaudRates.includes(Baud.toString()) != true) {
+  console.log("Please select a valid baudrate");
+  process.exit(1);
+}
+
+if (NetPorts != undefined && NetPorts.length != ComPorts.length) {
+  console.log("Number of network ports must equal number of serial ports!");
+  process.exit(1);
+} else if (NetPorts == undefined) {
+  let portNum = 1002;
+  NetPorts = ["1001"];
+  for (var i = 0; i < ComPorts.length - 1; i++) {
+    NetPorts.push(portNum.toString());
+    portNum++;
+  }
+}
+
+let originalString = crypto.randomBytes(parseInt(Bytes)).toString('hex') + "\r\n";
+let previousPercentage = 0
+let completedTransfers = 0
+myNet = [];
+myPort = [];
+receivedString = [];
 
 for (let i = 0; i < NetPorts.length; i++) {
-  receivedString[i] = ""
+  receivedString[i] = "";
   myNet[i] = new net.createServer(function (socket) {
-    //  console.log('Server started: Waiting for client connection ...');
-    //  console.log('Client connected:port,address: ' + socket.remotePort, socket.remoteAddress);
-    //  console.log(NetPorts[i])
-    socket.on('data', on_sock_data_arrival)
+    socket.on('data', on_sock_data_arrival);
   });
 
   function on_sock_data_arrival(data) {
     receivedString[i] += data.toString();
-    console.log("Packet received on port " + NetPorts[i]);
+    let percentage = Math.floor(receivedString[0].length / originalString.length * 100);
+    if (percentage != previousPercentage)
+      console.log("Percentage complete: " + percentage + "%");
     if (receivedString[i].endsWith('\r\n')) {
       console.log("Delimiter Detected on port " + NetPorts[i]);
-      receivedString[i] == originalString ? console.log("Success") : console.log("Fail")
+      if (receivedString[i] == originalString) {
+        console.log("Success")
+      } else {
+        console.log("Fail");
+        process.exit(1);
+      }
+      if (completedTransfers++ == ComPorts.length - 1) {
+        console.log("All transfers completed succesfully!")
+        process.exit(0);
+      }
     }
+    previousPercentage = Math.floor(receivedString[0].length / originalString.length * 100);
   };
 
   myNet[i].listen(NetPorts[i], '192.168.1.39', sendData);
 
   function sendData() {
 
-    myPort[i] = new SerialPort(ComPorts[i], {
-      baudRate: 230400,
-      dataBits: 8,
-      stopBits: 1,
-      parity: 'none',  
-      rtscts: true,      
+    myPort[i] = new serialport("COM" + ComPorts[i], {
+      baudRate: parseInt(Baud),
+      rtscts: true,
     })
-
     myPort[i].on('open', onOpen);
 
     function onOpen() {

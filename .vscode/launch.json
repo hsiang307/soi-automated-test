@@ -14,7 +14,10 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${file}"
+            "program": "${workspaceFolder}/main.js",
+            //"args": ["--sp","26","27","28","29","--np", "1001","1002","1003","1004","--baud", "230400"]     
+           "args": ["--sp","26","27","28","29","--baud", "230400", "--bytes", "10000"]        
+           // "args": ["--sp","26","27","29"]
         }
     ]
 }
