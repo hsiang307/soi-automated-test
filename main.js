@@ -5,6 +5,7 @@ var crypto = require("crypto");
 
 const optionDefinitions = [
   { name: 'sp', type: String, multiple: true },
+  { name: 'ip', type: String },
   { name: 'np', type: Number, multiple: true },
   { name: 'baud', type: Number },
   { name: 'bytes', type: Number }
@@ -12,6 +13,7 @@ const optionDefinitions = [
 
 const arguments = commandLineArgs(optionDefinitions)
 var ComPorts = arguments.sp;
+var IP = arguments.ip;
 var NetPorts = arguments.np;
 var Baud = arguments.baud;
 var Bytes = arguments.bytes;
@@ -25,7 +27,7 @@ if (BaudRates.includes(Baud.toString()) != true) {
   process.exit(1);
 }
 
-if (NetPorts != undefined && NetPorts.length != ComPorts.length) {
+--if (NetPorts != undefined && NetPorts.length != ComPorts.length) {
   console.log("Number of network ports must equal number of serial ports!");
   process.exit(1);
 } else if (NetPorts == undefined) {
@@ -71,7 +73,7 @@ for (let i = 0; i < NetPorts.length; i++) {
     previousPercentage = Math.floor(receivedString[0].length / originalString.length * 100);
   };
 
-  myNet[i].listen(NetPorts[i], '192.168.1.39', sendData);
+  myNet[i].listen(NetPorts[i], IP, sendData);
 
   function sendData() {
 
