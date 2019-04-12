@@ -27,7 +27,7 @@ if (BaudRates.includes(Baud.toString()) != true) {
   process.exit(1);
 }
 
---if (NetPorts != undefined && NetPorts.length != ComPorts.length) {
+if (NetPorts != undefined && NetPorts.length != ComPorts.length) {
   console.log("Number of network ports must equal number of serial ports!");
   process.exit(1);
 } else if (NetPorts == undefined) {
