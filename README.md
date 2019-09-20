@@ -1,6 +1,6 @@
 # **SOI Automated Test** 
 
-This script is designed to stress test the SOI application. Randomly generated is sent from the PC via serial. The data is then received back via ethernet. Sent data is compared with received data to check for any loss.
+This script is designed to stress test the SOI application. Randomly generated data is sent from the PC via serial. The data is then received back via ethernet. Sent data is compared with received data to check for any loss.
 
 
 
